@@ -1,4 +1,4 @@
-import cv2 
+import cv2
 import google.generativeai as genai
 import speech_recognition as sr
 import pyttsx3
@@ -17,7 +17,7 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
 # Function to detect faces using OpenCV
 def detect_faces():
-    known_face_encodings = load_registered_faces()  # Load registered face encodings
+    known_face_encodings = load_registered_faces()
     cap = cv2.VideoCapture(0)
 
     while True:
@@ -31,7 +31,7 @@ def detect_faces():
             if True in matches:
                 cap.release()
                 cv2.destroyAllWindows()
-                process_input()  # Start voice interaction after face is recognized
+                process_input()
                 return
 
         cv2.imshow('Face Detection', frame)
@@ -59,9 +59,7 @@ def load_registered_faces():
 # Function to generate a response from Google Generative AI
 def generate_response(prompt):
     try:
-
         response = model.generate_content(prompt)
-           
         return response.text if response else "Sorry, there was an error generating the response."
     except Exception as e:
         return f"Sorry, there was an error: {e}"
@@ -104,11 +102,24 @@ def update_text_area(text, tag=None):
 # Create GUI window
 root = tk.Tk()
 root.title("Interactive Chatbot with Face Detection")
-root.geometry("600x600")
+root.geometry("700x700")
+root.config(bg="#2c3e50")  # Set a dark background color
 
-# Create a text area for displaying the conversation
-text_area = tk.Text(root, wrap=tk.WORD, bg="#34495e", fg="#ecf0f1", font=("Helvetica", 12))
-text_area.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+# Configure a modern style for buttons and widgets
+style = ttk.Style()
+style.configure("TButton", font=("Helvetica", 14), padding=10, background="#1abc9c", foreground="white")
+style.map("TButton", background=[('active', '#16a085')])
+
+# Create a scrollable text area for displaying the conversation
+text_frame = tk.Frame(root)
+text_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+scrollbar = tk.Scrollbar(text_frame)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+text_area = tk.Text(text_frame, wrap=tk.WORD, bg="#34495e", fg="#ecf0f1", font=("Helvetica", 12), yscrollcommand=scrollbar.set)
+text_area.pack(fill=tk.BOTH, expand=True)
+scrollbar.config(command=text_area.yview)
 
 # Style text for user, chatbot, and errors
 text_area.tag_configure('user', foreground="#2ecc71", font=("Helvetica", 12, "bold"))
@@ -116,10 +127,13 @@ text_area.tag_configure('chatbot', foreground="#3498db", font=("Helvetica", 12, 
 text_area.tag_configure('error', foreground="#e74c3c", font=("Helvetica", 12, "italic"))
 
 # Add buttons for face detection and prompting again
-face_detect_button = ttk.Button(root, text="Start Face Detection", command=lambda: threading.Thread(target=detect_faces).start())
+button_frame = tk.Frame(root, bg="#2c3e50")
+button_frame.pack(pady=20)
+
+face_detect_button = ttk.Button(button_frame, text="Start Face Detection", command=lambda: threading.Thread(target=detect_faces).start())
 face_detect_button.pack(pady=10)
 
-prompt_again_button = ttk.Button(root, text="Prompt Again", command=prompt_again)
+prompt_again_button = ttk.Button(button_frame, text="Prompt Again", command=prompt_again)
 
 # Start the GUI main loop
 root.mainloop()
